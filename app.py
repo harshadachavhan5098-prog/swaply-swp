@@ -1,4 +1,5 @@
 import os
+import tempfile
 from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, abort, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -10,25 +11,14 @@ app.config['SECRET_KEY'] = 'swaply-secret-key-2024'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-# Detect if running on Vercel (read-only filesystem)
-IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', '') != ''
+# Always use a writable temp directory for uploads and the database.
+# This works on both local development and Vercel (where /var/task is read-only).
+# tempfile.gettempdir() returns /tmp on Linux (Vercel) and the user temp dir on Windows.
+app.config['UPLOAD_FOLDER'] = os.path.join(tempfile.gettempdir(), 'swaply_uploads')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(tempfile.gettempdir(), 'swaply.db').replace('\\', '/')
 
-# Use writable temp directories on Vercel, otherwise use local paths
-if IS_VERCEL:
-    # Vercel: use /tmp which is writable
-    app.config['UPLOAD_FOLDER'] = os.path.join('/tmp', 'uploads')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/swaply.db'
-else:
-    # Local: use project directories
-    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///swaply.db'
-
-# Safely create upload folder - skip if filesystem is read-only (e.g. Vercel)
-try:
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-except OSError:
-    # Read-only filesystem (Vercel) - uploads will be handled gracefully
-    pass
+# Do NOT create folders at startup - this crashes on Vercel's read-only filesystem.
+# The upload folder will be created lazily on first upload if needed.
 
 db.init_app(app)
 
@@ -57,6 +47,8 @@ def save_upload(file):
         name, ext = os.path.splitext(filename)
         filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{name}{ext}"
         try:
+            # Create upload folder lazily on first upload
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return filename
         except OSError:
@@ -645,6 +637,8 @@ def save_upload(file):
         name, ext = os.path.splitext(filename)
         filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{name}{ext}"
         try:
+            # Create upload folder lazily on first upload
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return filename
         except OSError:
