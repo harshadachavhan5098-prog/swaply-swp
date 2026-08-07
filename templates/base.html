@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Swaply - Skill Exchange{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('feed') }}" class="nav-brand">
+                <i class="fas fa-exchange-alt"></i> Swaply
+            </a>
+            <div class="nav-search">
+                <form action="{{ url_for('explore') }}" method="GET">
+                    <input type="text" name="q" placeholder="Search users, skills..." class="search-input">
+                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('feed') }}" class="nav-link" title="Feed">
+                    <i class="fas fa-home"></i>
+                    <span>Feed</span>
+                </a>
+                <a href="{{ url_for('explore') }}" class="nav-link" title="Explore">
+                    <i class="fas fa-compass"></i>
+                    <span>Explore</span>
+                </a>
+                <a href="{{ url_for('rooms') }}" class="nav-link" title="Rooms">
+                    <i class="fas fa-door-open"></i>
+                    <span>Rooms</span>
+                </a>
+                <a href="{{ url_for('chat') }}" class="nav-link" title="Chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Chat</span>
+                </a>
+                <a href="{{ url_for('notes') }}" class="nav-link" title="Notes">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>Notes</span>
+                </a>
+                <a href="{{ url_for('assistant') }}" class="nav-link" title="AI Assistant">
+                    <i class="fas fa-robot"></i>
+                    <span>AI</span>
+                </a>
+                <a href="{{ url_for('notifications') }}" class="nav-link notification-bell" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_notifications > 0 %}
+                    <span class="badge">{{ unread_notifications }}</span>
+                    {% endif %}
+                    <span>Alerts</span>
+                </a>
+                <a href="{{ url_for('profile', username=current_user.username) }}" class="nav-link" title="Profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-link nav-logout" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+            <div class="nav-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+                <span>{{ message }}</span>
+                <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

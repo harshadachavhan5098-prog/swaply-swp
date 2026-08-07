@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Chat - Swaply{% endblock %}
+{% block content %}
+<div class="chat-page">
+    <div class="chat-sidebar card">
+        <div class="chat-sidebar-header">
+            <h3><i class="fas fa-comment-dots"></i> Messages</h3>
+        </div>
+        <div class="chat-friend-list">
+            {% for friend in friends %}
+            <a href="{{ url_for('chat_with', user_id=friend.id) }}" class="chat-friend {% if other and other.id == friend.id %}active{% endif %}">
+                <div class="avatar avatar-sm">
+                    {% if friend.avatar %}
+                    <img src="{{ url_for('uploaded_file', filename=friend.avatar) }}" alt="{{ friend.username }}">
+                    {% else %}
+                    <span>{{ friend.username[0]|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="chat-friend-info">
+                    <strong>{{ friend.username }}</strong>
+                    {% if friend.skills_offered %}
+                    <small>{{ friend.skill_list(friend.skills_offered)[:2]|join(', ') }}</small>
+                    {% endif %}
+                </div>
+            </a>
+            {% else %}
+            <div class="empty-state small">
+                <i class="fas fa-user-friends"></i>
+                <p>Add friends to start chatting!</p>
+                <a href="{{ url_for('explore') }}" class="btn btn-primary btn-sm">Explore</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="chat-main card">
+        {% if other %}
+        <div class="chat-header">
+            <a href="{{ url_for('profile', username=other.username) }}" class="chat-header-user">
+                <div class="avatar avatar-sm">
+                    {% if other.avatar %}
+                    <img src="{{ url_for('uploaded_file', filename=other.avatar) }}" alt="{{ other.username }}">
+                    {% else %}
+                    <span>{{ other.username[0]|upper }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <strong>{{ other.username }}</strong>
+                    <small>Friend</small>
+                </div>
+            </a>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            {% for msg in messages %}
+            <div class="chat-message {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                <div class="message-bubble">
+                    <p>{{ msg.content }}</p>
+                    <small>{{ msg.created_at.strftime('%I:%M %p') }}</small>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state small">
+                <i class="fas fa-comments"></i>
+                <p>No messages yet. Say hello!</p>
+            </div>
+            {% endfor %}
+        </div>
+        <form method="POST" action="{{ url_for('send_message') }}" class="chat-input">
+            <input type="hidden" name="receiver_id" value="{{ other.id }}">
+            <input type="text" name="content" placeholder="Type a message..." required autocomplete="off">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </form>
+        {% else %}
+        <div class="chat-empty">
+            <i class="fas fa-comments"></i>
+            <h3>Select a friend to start chatting</h3>
+            <p>Choose someone from the list to begin a conversation.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    // Scroll to bottom of chat on load
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+</script>
+{% endblock %}

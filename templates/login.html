@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Log In - Swaply{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-exchange-alt"></i>
+            <h2>Welcome Back</h2>
+            <p>Log in to continue your skill exchange journey</p>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}" class="form-stack">
+            <div class="form-group">
+                <label for="identifier"><i class="fas fa-user"></i> Username or Email</label>
+                <input type="text" id="identifier" name="identifier" placeholder="Enter your username or email" required>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i> Log In
+            </button>
+        </form>
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

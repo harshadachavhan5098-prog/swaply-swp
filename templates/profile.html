@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} - Swaply{% endblock %}
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header card">
+        <div class="profile-cover"></div>
+        <div class="profile-info">
+            <div class="avatar avatar-xl">
+                {% if user.avatar %}
+                <img src="{{ url_for('uploaded_file', filename=user.avatar) }}" alt="{{ user.username }}">
+                {% else %}
+                <span>{{ user.username[0]|upper }}</span>
+                {% endif %}
+            </div>
+            <div class="profile-details">
+                <h1>{{ user.username }}</h1>
+                {% if user.location %}
+                <p class="profile-location"><i class="fas fa-map-marker-alt"></i> {{ user.location }}</p>
+                {% endif %}
+                {% if user.bio %}
+                <p class="profile-bio">{{ user.bio }}</p>
+                {% endif %}
+                <p class="profile-meta">
+                    <span><i class="fas fa-calendar"></i> Joined {{ user.created_at.strftime('%b %Y') }}</span>
+                    <span><i class="fas fa-users"></i> {{ friends|length }} friends</span>
+                    <span><i class="fas fa-images"></i> {{ posts|length }} posts</span>
+                </p>
+            </div>
+            <div class="profile-actions">
+                {% if user.id == current_user.id %}
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+                {% else %}
+                    {% if is_friend %}
+                    <form method="POST" action="{{ url_for('remove_friend', user_id=user.id) }}" onsubmit="return confirm('Remove {{ user.username }} from friends?')">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-user-minus"></i> Remove Friend
+                        </button>
+                    </form>
+                    <a href="{{ url_for('chat_with', user_id=user.id) }}" class="btn btn-primary">
+                        <i class="fas fa-comment-dots"></i> Chat
+                    </a>
+                    {% elif pending %}
+                    <button class="btn btn-outline" disabled>
+                        <i class="fas fa-clock"></i> Request Pending
+                    </button>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('send_friend_request', user_id=user.id) }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add Friend
+                        </button>
+                    </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-skills">
+            <div class="card">
+                <h3 class="sidebar-title"><i class="fas fa-graduation-cap"></i> Skills Offered</h3>
+                {% if user.skills_offered %}
+                <div class="skill-tags">
+                    {% for s in user.skill_list(user.skills_offered) %}
+                    <a href="{{ url_for('explore', skill=s) }}" class="tag tag-offer">{{ s }}</a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="muted">No skills listed yet.</p>
+                {% endif %}
+            </div>
+            <div class="card">
+                <h3 class="sidebar-title"><i class="fas fa-star"></i> Skills Wanted</h3>
+                {% if user.skills_wanted %}
+                <div class="skill-tags">
+                    {% for s in user.skill_list(user.skills_wanted) %}
+                    <a href="{{ url_for('explore', skill=s) }}" class="tag tag-want">{{ s }}</a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="muted">No skills wanted yet.</p>
+                {% endif %}
+            </div>
+            <div class="card">
+                <h3 class="sidebar-title"><i class="fas fa-users"></i> Friends ({{ friends|length }})</h3>
+                {% if friends %}
+                <div class="friend-list">
+                    {% for f in friends[:8] %}
+                    <a href="{{ url_for('profile', username=f.username) }}" class="friend-chip">
+                        <div class="avatar avatar-xs">
+                            {% if f.avatar %}
+                            <img src="{{ url_for('uploaded_file', filename=f.avatar) }}" alt="{{ f.username }}">
+                            {% else %}
+                            <span>{{ f.username[0]|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <span>{{ f.username }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="muted">No friends yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="profile-posts">
+            <h2 class="section-title"><i class="fas fa-images"></i> Posts</h2>
+            {% for post in posts %}
+            <div class="post-card card">
+                <div class="post-header">
+                    <div class="post-user">
+                        <div class="avatar avatar-sm">
+                            {% if post.author.avatar %}
+                            <img src="{{ url_for('uploaded_file', filename=post.author.avatar) }}" alt="{{ post.author.username }}">
+                            {% else %}
+                            <span>{{ post.author.username[0]|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="post-user-info">
+                            <strong>{{ post.author.username }}</strong>
+                            <small>{{ post.created_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                        </div>
+                    </div>
+                    {% if post.user_id == current_user.id %}
+                    <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('Delete this post?')">
+                        <button type="submit" class="icon-btn danger"><i class="fas fa-trash"></i></button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% if post.image %}
+                <div class="post-image">
+                    <img src="{{ url_for('uploaded_file', filename=post.image) }}" alt="Post image">
+                </div>
+                {% endif %}
+                <div class="post-body">
+                    {% if post.caption %}
+                    <p class="post-caption">{{ post.caption }}</p>
+                    {% endif %}
+                    {% if post.tag_list() %}
+                    <div class="post-tags">
+                        {% for tag in post.tag_list() %}
+                        <a href="{{ url_for('explore', skill=tag) }}" class="tag">#{{ tag }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="post-actions">
+                    <button class="action-btn like-btn {% if post.likes|selectattr('user_id', 'equalto', current_user.id)|list %}liked{% endif %}"
+                            data-post-id="{{ post.id }}">
+                        <i class="fas fa-heart"></i>
+                        <span class="like-count">{{ post.likes|length }}</span>
+                    </button>
+                    <button class="action-btn comment-toggle" data-target="comments-{{ post.id }}">
+                        <i class="fas fa-comment"></i>
+                        <span>{{ post.comments|length }}</span>
+                    </button>
+                </div>
+                <div class="post-comments" id="comments-{{ post.id }}">
+                    {% for comment in post.comments %}
+                    <div class="comment">
+                        <a href="{{ url_for('profile', username=comment.user.username) }}" class="comment-user">{{ comment.user.username }}</a>
+                        <span class="comment-text">{{ comment.content }}</span>
+                    </div>
+                    {% endfor %}
+                    <form method="POST" action="{{ url_for('add_comment', post_id=post.id) }}" class="comment-form">
+                        <input type="text" name="content" placeholder="Add a comment..." required>
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state card">
+                <i class="fas fa-images"></i>
+                <h3>No posts yet</h3>
+                <p>This user hasn't posted anything yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

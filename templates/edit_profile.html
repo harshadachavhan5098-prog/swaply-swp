@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile - Swaply{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card auth-card-wide">
+        <div class="auth-header">
+            <i class="fas fa-user-edit"></i>
+            <h2>Edit Profile</h2>
+            <p>Update your information to connect better</p>
+        </div>
+        <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data" class="form-stack">
+            <div class="form-group">
+                <label for="bio"><i class="fas fa-align-left"></i> Bio</label>
+                <textarea id="bio" name="bio" rows="3" placeholder="Tell others about yourself...">{{ current_user.bio }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="location"><i class="fas fa-map-marker-alt"></i> Location</label>
+                <input type="text" id="location" name="location" value="{{ current_user.location }}" placeholder="City, Country">
+            </div>
+            <div class="form-group">
+                <label for="skills_offered"><i class="fas fa-graduation-cap"></i> Skills You Offer</label>
+                <input type="text" id="skills_offered" name="skills_offered" value="{{ current_user.skills_offered }}" placeholder="e.g. Python, Guitar, Cooking (comma separated)">
+            </div>
+            <div class="form-group">
+                <label for="skills_wanted"><i class="fas fa-star"></i> Skills You Want</label>
+                <input type="text" id="skills_wanted" name="skills_wanted" value="{{ current_user.skills_wanted }}" placeholder="e.g. Spanish, Web Design (comma separated)">
+            </div>
+            <div class="form-group">
+                <label for="avatar"><i class="fas fa-camera"></i> Profile Picture</label>
+                <input type="file" id="avatar" name="avatar" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </form>
+        <div class="auth-footer">
+            <a href="{{ url_for('profile', username=current_user.username) }}"><i class="fas fa-arrow-left"></i> Back to Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

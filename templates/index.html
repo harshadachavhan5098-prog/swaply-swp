@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Swaply - Learn. Teach. Grow.{% endblock %}
+{% block content %}
+<div class="landing">
+    <div class="landing-hero">
+        <div class="landing-content">
+            <div class="landing-logo">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h1 class="landing-title">Swaply</h1>
+            <p class="landing-tagline">Learn. Teach. Grow. Exchange skills with people around the world.</p>
+            <div class="landing-buttons">
+                <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Get Started
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Log In
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="landing-features">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+            <h3>Skill Exchange</h3>
+            <p>Teach what you know and learn what you don't. Connect with people who complement your skills.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-users"></i></div>
+            <h3>Community</h3>
+            <p>Build your network, make friends, and collaborate in private learning rooms.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-robot"></i></div>
+            <h3>AI Assistant</h3>
+            <p>Get personalized tips on how to improve your learning journey with our smart assistant.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-book-open"></i></div>
+            <h3>Share Knowledge</h3>
+            <p>Post updates, share notes and PDFs, and build a library of knowledge with the community.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

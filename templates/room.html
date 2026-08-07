@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ room.name }} - Swaply{% endblock %}
+{% block content %}
+<div class="room-page">
+    <div class="room-header card">
+        <div class="room-header-info">
+            <div class="room-icon large"><i class="fas fa-door-open"></i></div>
+            <div>
+                <h1>{{ room.name }}</h1>
+                {% if room.skill %}
+                <span class="tag tag-offer">{{ room.skill }}</span>
+                {% endif %}
+                {% if room.description %}
+                <p class="room-desc">{{ room.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="room-members">
+            <h4><i class="fas fa-users"></i> Members ({{ members|length }})</h4>
+            <div class="member-list">
+                {% for member in members %}
+                <a href="{{ url_for('profile', username=member.username) }}" class="member-chip" title="{{ member.username }}">
+                    <div class="avatar avatar-xs">
+                        {% if member.avatar %}
+                        <img src="{{ url_for('uploaded_file', filename=member.avatar) }}" alt="{{ member.username }}">
+                        {% else %}
+                        <span>{{ member.username[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <span>{{ member.username }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="room-chat card">
+        <div class="room-messages" id="room-messages">
+            {% for msg in messages %}
+            <div class="chat-message {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                <div class="message-bubble">
+                    <small class="message-sender">
+                        {% if msg.sender_id != current_user.id %}
+                        <a href="{{ url_for('profile', username=msg.sender.username) }}">{{ msg.sender.username }}</a>
+                        {% else %}
+                        You
+                        {% endif %}
+                    </small>
+                    <p>{{ msg.content }}</p>
+                    <small>{{ msg.created_at.strftime('%I:%M %p') }}</small>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state small">
+                <i class="fas fa-comments"></i>
+                <p>No messages yet. Start the conversation!</p>
+            </div>
+            {% endfor %}
+        </div>
+        <form method="POST" action="{{ url_for('send_room_message', room_id=room.id) }}" class="chat-input">
+            <input type="text" name="content" placeholder="Type a message..." required autocomplete="off">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const roomMessages = document.getElementById('room-messages');
+    if (roomMessages) {
+        roomMessages.scrollTop = roomMessages.scrollHeight;
+    }
+</script>
+{% endblock %}

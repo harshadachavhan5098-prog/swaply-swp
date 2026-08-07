@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Friends - Swaply{% endblock %}
+{% block content %}
+<div class="friends-page">
+    <div class="friends-header">
+        <h1><i class="fas fa-users"></i> Friends</h1>
+        <p>Manage your connections</p>
+    </div>
+
+    {% if pending_requests %}
+    <div class="card section-card">
+        <h2 class="section-title"><i class="fas fa-user-clock"></i> Friend Requests</h2>
+        <div class="request-list">
+            {% for req in pending_requests %}
+            <div class="request-item">
+                <a href="{{ url_for('profile', username=req.sender.username) }}" class="request-user">
+                    <div class="avatar avatar-sm">
+                        {% if req.sender.avatar %}
+                        <img src="{{ url_for('uploaded_file', filename=req.sender.avatar) }}" alt="{{ req.sender.username }}">
+                        {% else %}
+                        <span>{{ req.sender.username[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>{{ req.sender.username }}</strong>
+                        <small>{{ req.created_at.strftime('%b %d, %Y') }}</small>
+                    </div>
+                </a>
+                <div class="request-actions">
+                    <form method="POST" action="{{ url_for('accept_friend_request', request_id=req.id) }}">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('decline_friend_request', request_id=req.id) }}">
+                        <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-times"></i> Decline</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if sent_requests %}
+    <div class="card section-card">
+        <h2 class="section-title"><i class="fas fa-paper-plane"></i> Sent Requests</h2>
+        <div class="request-list">
+            {% for req in sent_requests %}
+            <div class="request-item">
+                <a href="{{ url_for('profile', username=req.receiver.username) }}" class="request-user">
+                    <div class="avatar avatar-sm">
+                        {% if req.receiver.avatar %}
+                        <img src="{{ url_for('uploaded_file', filename=req.receiver.avatar) }}" alt="{{ req.receiver.username }}">
+                        {% else %}
+                        <span>{{ req.receiver.username[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>{{ req.receiver.username }}</strong>
+                        <small>Pending</small>
+                    </div>
+                </a>
+                <span class="badge badge-pending"><i class="fas fa-clock"></i> Pending</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card section-card">
+        <h2 class="section-title"><i class="fas fa-user-friends"></i> My Friends ({{ friends|length }})</h2>
+        {% if friends %}
+        <div class="friend-grid">
+            {% for friend in friends %}
+            <div class="friend-card">
+                <a href="{{ url_for('profile', username=friend.username) }}" class="friend-card-main">
+                    <div class="avatar avatar-lg">
+                        {% if friend.avatar %}
+                        <img src="{{ url_for('uploaded_file', filename=friend.avatar) }}" alt="{{ friend.username }}">
+                        {% else %}
+                        <span>{{ friend.username[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <strong>{{ friend.username }}</strong>
+                    {% if friend.skills_offered %}
+                    <small class="friend-skills">{{ friend.skill_list(friend.skills_offered)[:2]|join(', ') }}</small>
+                    {% endif %}
+                </a>
+                <div class="friend-card-actions">
+                    <a href="{{ url_for('chat_with', user_id=friend.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-comment-dots"></i> Chat
+                    </a>
+                    <form method="POST" action="{{ url_for('remove_friend', user_id=friend.id) }}" onsubmit="return confirm('Remove {{ friend.username }}?')">
+                        <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-user-minus"></i></button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-friends"></i>
+            <h3>No friends yet</h3>
+            <p>Explore the community and connect with people!</p>
+            <a href="{{ url_for('explore') }}" class="btn btn-primary"><i class="fas fa-compass"></i> Explore</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

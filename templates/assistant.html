@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant - Swaply{% endblock %}
+{% block content %}
+<div class="assistant-page">
+    <div class="assistant-header">
+        <div class="assistant-icon"><i class="fas fa-robot"></i></div>
+        <h1>Swaply AI Assistant</h1>
+        <p>Get personalized tips to improve your skill exchange journey</p>
+    </div>
+
+    <div class="assistant-chat card">
+        <div class="assistant-messages" id="assistant-messages">
+            <div class="chat-message received">
+                <div class="message-bubble assistant-bubble">
+                    <p>Hi {{ current_user.username }}! 👋 I'm your Swaply assistant. Ask me about skills, friends, rooms, notes, or how to get the most out of Swaply!</p>
+                </div>
+            </div>
+            {% if question and answer %}
+            <div class="chat-message sent">
+                <div class="message-bubble">
+                    <p>{{ question }}</p>
+                </div>
+            </div>
+            <div class="chat-message received">
+                <div class="message-bubble assistant-bubble">
+                    <p>{{ answer }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <form method="POST" action="{{ url_for('assistant_ask') }}" class="chat-input">
+            <input type="text" name="question" placeholder="Ask me anything about Swaply..." required autocomplete="off">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+
+    <div class="assistant-suggestions">
+        <h3>Try asking:</h3>
+        <div class="suggestion-chips">
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">How can I improve my skills?</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">How do I make friends?</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">What are learning rooms?</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">How do I share notes?</button>
+            <button class="suggestion-chip" onclick="fillSuggestion(this)">How do I create a post?</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    function fillSuggestion(btn) {
+        const input = document.querySelector('.assistant-chat .chat-input input');
+        if (input) {
+            input.value = btn.textContent;
+            input.focus();
+        }
+    }
+    const assistantMessages = document.getElementById('assistant-messages');
+    if (assistantMessages) {
+        assistantMessages.scrollTop = assistantMessages.scrollHeight;
+    }
+</script>
+{% endblock %}

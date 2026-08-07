@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Explore - Swaply{% endblock %}
+{% block content %}
+<div class="explore-page">
+    <div class="explore-header">
+        <h1><i class="fas fa-compass"></i> Explore</h1>
+        <p>Discover people with skills to exchange</p>
+    </div>
+
+    <div class="explore-search card">
+        <form method="GET" action="{{ url_for('explore') }}" class="explore-form">
+            <div class="form-group">
+                <label for="q"><i class="fas fa-search"></i> Search</label>
+                <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search by name, skill, or bio...">
+            </div>
+            <div class="form-group">
+                <label for="skill"><i class="fas fa-tag"></i> Skill</label>
+                <input type="text" id="skill" name="skill" value="{{ skill }}" placeholder="e.g. Python, Guitar, Cooking">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <div class="user-grid">
+        {% for user in users %}
+        <div class="user-card card">
+            <div class="user-card-header">
+                <div class="avatar avatar-lg">
+                    {% if user.avatar %}
+                    <img src="{{ url_for('uploaded_file', filename=user.avatar) }}" alt="{{ user.username }}">
+                    {% else %}
+                    <span>{{ user.username[0]|upper }}</span>
+                    {% endif %}
+                </div>
+                <h3>{{ user.username }}</h3>
+                {% if user.location %}
+                <p class="user-location"><i class="fas fa-map-marker-alt"></i> {{ user.location }}</p>
+                {% endif %}
+            </div>
+            {% if user.bio %}
+            <p class="user-bio">{{ user.bio[:120] }}{% if user.bio|length > 120 %}...{% endif %}</p>
+            {% endif %}
+            <div class="user-skills">
+                {% if user.skills_offered %}
+                <div class="skill-group">
+                    <small class="skill-label"><i class="fas fa-graduation-cap"></i> Offers</small>
+                    <div class="skill-tags">
+                        {% for s in user.skill_list(user.skills_offered)[:4] %}
+                        <span class="tag tag-offer">{{ s }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if user.skills_wanted %}
+                <div class="skill-group">
+                    <small class="skill-label"><i class="fas fa-star"></i> Wants</small>
+                    <div class="skill-tags">
+                        {% for s in user.skill_list(user.skills_wanted)[:4] %}
+                        <span class="tag tag-want">{{ s }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="user-card-actions">
+                <a href="{{ url_for('profile', username=user.username) }}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-user"></i> View Profile
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state card">
+            <i class="fas fa-users"></i>
+            <h3>No users found</h3>
+            <p>Try a different search or check back later.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

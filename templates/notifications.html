@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Notifications - Swaply{% endblock %}
+{% block content %}
+<div class="notifications-page">
+    <div class="notifications-header">
+        <h1><i class="fas fa-bell"></i> Notifications</h1>
+        <p>Stay updated with your activity</p>
+    </div>
+
+    <div class="card section-card">
+        {% if notifications %}
+        <div class="notification-list">
+            {% for n in notifications %}
+            <a href="{{ n.link }}" class="notification-item {% if not n.is_read %}unread{% endif %}">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="notification-content">
+                    <p>{{ n.message }}</p>
+                    <small>{{ n.created_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                </div>
+                {% if not n.is_read %}
+                <span class="notification-dot"></span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bell-slash"></i>
+            <h3>No notifications</h3>
+            <p>You're all caught up!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
