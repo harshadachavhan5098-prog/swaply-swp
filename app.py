@@ -7,12 +7,28 @@ from models import db, User, Post, Like, Comment, FriendRequest, Room, Message, 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'swaply-secret-key-2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///swaply.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Detect if running on Vercel (read-only filesystem)
+IS_VERCEL = os.environ.get('VERCEL', '') == '1' or os.environ.get('VERCEL_ENV', '') != ''
+
+# Use writable temp directories on Vercel, otherwise use local paths
+if IS_VERCEL:
+    # Vercel: use /tmp which is writable
+    app.config['UPLOAD_FOLDER'] = os.path.join('/tmp', 'uploads')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/swaply.db'
+else:
+    # Local: use project directories
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///swaply.db'
+
+# Safely create upload folder - skip if filesystem is read-only (e.g. Vercel)
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+except OSError:
+    # Read-only filesystem (Vercel) - uploads will be handled gracefully
+    pass
 
 db.init_app(app)
 
@@ -40,8 +56,12 @@ def save_upload(file):
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
         filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{name}{ext}"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return filename
+        try:
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return filename
+        except OSError:
+            # Read-only filesystem (Vercel) - skip file upload
+            return ''
     return ''
 
 
@@ -523,7 +543,10 @@ def delete_note(note_id):
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    try:
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    except (FileNotFoundError, OSError):
+        abort(404)
 
 
 # ============ AI ASSISTANT ============
@@ -621,8 +644,12 @@ def save_upload(file):
         filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
         filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{name}{ext}"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return filename
+        try:
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return filename
+        except OSError:
+            # Read-only filesystem (Vercel) - skip file upload
+            return ''
     return ''
 
 
